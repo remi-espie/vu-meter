@@ -5,7 +5,7 @@ import math
 import struct
 from vu_constants import SHORT_NORMALIZE
 
-class Amplitude(object):
+class Amplitude:
     ''' an abstraction for Amplitudes (with an underlying float value)
     that packages a display function and many more '''
 
@@ -52,5 +52,4 @@ class Amplitude(object):
         int_val = self.to_int(scale)
         mark_val = mark.to_int(scale)
         delta = abs(int_val - mark_val)
-        print(int_val * '*', (delta-1) * ' ', '|')
-        
+        print('*' * int_val, (delta-1) * ' ', '|')
