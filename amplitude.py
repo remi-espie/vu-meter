@@ -5,6 +5,7 @@ import math
 import struct
 from vu_constants import SHORT_NORMALIZE
 
+
 class Amplitude:
     ''' an abstraction for Amplitudes (with an underlying float value)
     that packages a display function and many more '''
@@ -46,7 +47,7 @@ class Amplitude:
         '''Generate an Amplitude object based on a block of audio input data'''
         count = len(block) / 2
         shorts = struct.unpack("%dh" % count, block)
-        sum_squares = sum(s**2 * SHORT_NORMALIZE**2 for s in shorts)
+        sum_squares = sum(s ** 2 * SHORT_NORMALIZE ** 2 for s in shorts)
         return Amplitude(math.sqrt(sum_squares / count))
 
     def display(self, mark, scale=50):
@@ -57,6 +58,6 @@ class Amplitude:
         delta = abs(vu_int - mark_val)
         visual_str = f'{self.boundary_char}'
         visual_str += f'{self.audio_char * vu_int}'
-        visual_str += f'{self.silence_char * (delta-1)}'
+        visual_str += f'{self.silence_char * (delta - 1)}'
         visual_str += f'{self.boundary_char}'
         print(visual_str)
