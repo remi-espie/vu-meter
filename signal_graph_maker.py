@@ -7,7 +7,7 @@ from matplotlib import animation
 p = pyaudio.PyAudio()
 
 # Open input stream
-stream = p.open(format=pyaudio.paInt16, channels=2, rate=44100, input=True, input_device_index=2)
+stream = p.open(format=pyaudio.paInt16, channels=2, rate=44100, input=True, input_device_index=13)
 
 # Set up the plot
 fig, ax = plt.subplots()
@@ -16,9 +16,6 @@ ax.set_ylim(-32768, 32767)
 line, = ax.plot([], [])
 
 # Start the stream
-stream.start_stream()
-
-
 # Plot the data
 def animate(i):
     data = stream.read(1024)
