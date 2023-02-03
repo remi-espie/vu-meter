@@ -2,15 +2,16 @@ import pyaudio
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
-from scipy.signal import butter
 import RPi.GPIO as GPIO
+from scipy.signal import butter, lfilter
 
 # Initialize PyAudio
 p = pyaudio.PyAudio()
+RATE = 44100
 
 # Open input stream
-stream = p.open(format=pyaudio.paInt16, channels=2, rate=44100, input=True, frames_per_buffer=1024,
-                input_device_index=13)
+stream = p.open(format=pyaudio.paInt16, channels=2, rate=RATE, input=True, frames_per_buffer=1024,
+                input_device_index=12)
 
 # Set up the plot
 fig, ax = plt.subplots()
@@ -24,20 +25,28 @@ GPIO.setmode(GPIO.BOARD)
 GPIO.setup(32, GPIO.OUT)
 
 p = GPIO.PWM(32, 1)
-p.start(0)
+# p.start(0)
 
 
-# Plot tge data as VU
+def lowpass_filter(data, cutoff, fs, order=5):
+    b, a = butter(order, cutoff / (0.5 * fs), btype='low')
+    y = lfilter(b, a, data)
+    return y
+
+
+# Plot the data as VU
 def animate(i):
     # Read data from the input stream
     data = np.frombuffer(stream.read(1024), dtype=np.int16)
     # Calculate the volume level
-    volume_norm = np.linalg.norm(data) / (2 ** 15)
     # Update the VU meter
-    line.set_data(np.arange(len(data)), volume_norm)
+    filtered_data = lowpass_filter(data, cutoff=300, fs=RATE)
+    volume_norm = np.linalg.norm(filtered_data) / (2 ** 15)
+
+    line.set_data(np.arange(len(filtered_data)), volume_norm)
     led_value = np.clip(volume_norm * 10, 0, 100)
     print(led_value)
-    p.ChangeDutyCycle(np.clip(led_value, 0, 100))
+    # p.ChangeDutyCycle(np.clip(led_value, 0, 100))
     return line,
 
 
