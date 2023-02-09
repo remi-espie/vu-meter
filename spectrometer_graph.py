@@ -18,7 +18,6 @@ stream = p.open(
     rate=RATE,
     input=True,
     output=False,
-    input_device_index=2,
     frames_per_buffer=BUFFER
 )
 
@@ -38,7 +37,7 @@ def init_line():
 
 def update_line(i):
     try:
-        data = numpy.fft.rfft(numpy.fromstring(
+        data = numpy.fft.rfft(numpy.frombuffer(
             stream.read(BUFFER), dtype=numpy.float32)
         )
     except IOError:
