@@ -10,3 +10,6 @@ import sounddevice
 
 s = sounddevice.query_devices()
 print(s)
+
+s = sounddevice.default.device[0]
+print(s)

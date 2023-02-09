@@ -1,9 +1,7 @@
 import pyaudio
 import numpy as np
-import matplotlib.pyplot as plt
-import sounddevice
-from matplotlib import animation
 import RPi.GPIO as GPIO
+import sounddevice
 from scipy.signal import butter, lfilter, filtfilt
 
 # Initialize PyAudio
@@ -16,14 +14,6 @@ default_input = sounddevice.default.device[0]
 # Open input stream
 stream = p.open(format=pyaudio.paInt16, channels=2, rate=RATE, input=True, frames_per_buffer=1024,
                 input_device_index=default_input)
-
-# Set up the plot
-fig, ax = plt.subplots()
-ax.set_xlim(0, 5)
-ax.set_ylim(0, 15)
-line1, = ax.plot([], [])
-line2, = ax.plot([], [])
-line3, = ax.plot([], [])
 
 # Start the stream
 stream.start_stream()
@@ -45,33 +35,26 @@ def highpass_filter(signal, cutoff, fs, order=5):
 
 
 # Plot the data as VU
-def animate(i):
+while True:
     # Read data from the input stream
     data = np.frombuffer(stream.read(1024), dtype=np.int16)
     # Calculate the volume level
-    # Update the VU meter
+
+    # for low pass
     lowpass_filtered_data = lowpass_filter(data, cutoff=300, fs=RATE)
     volume_norm_low = np.linalg.norm(lowpass_filtered_data) / (2 ** 15)
 
+    # for high pass
     highpass_filtered_data = highpass_filter(data, 5000, fs=RATE)
     volume_norm_high = np.linalg.norm(highpass_filtered_data) / (2 ** 15)
 
     volume_norm = np.linalg.norm(data) / (2 ** 15)
 
-    line1.set_data([0, 2], volume_norm_low)
-    line2.set_data([3, 5], volume_norm_high)
-    line3.set_data([2, 3], volume_norm)
-
     led_value = np.clip(volume_norm * 7.5, 0, 100)
     print(led_value)
-    # p.ChangeDutyCycle(np.clip(led_value, 0, 100))
-    return line1, line2, line3,
+    p.ChangeDutyCycle(led_value)
 
 
-# # Create an animation that updates the VU meter at a specified interval
-ani = animation.FuncAnimation(fig, animate, frames=np.linspace(0, 2 * np.pi, 128), interval=10)
-#
-plt.show()
 # Close the stream and terminate PyAudio
 stream.stop_stream()
 stream.close()
