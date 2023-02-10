@@ -15,7 +15,7 @@ BUFFER = 882
 default_input = sounddevice.default.device[0]
 
 # Open input stream
-stream = p.open(format=pyaudio.paInt16, channels=2, rate=RATE, input=True, frames_per_buffer=BUFFER,
+stream = p.open(format=pyaudio.paInt16, channels=1, rate=RATE, input=True, frames_per_buffer=BUFFER,
                 input_device_index=default_input)
 
 # Create plots
@@ -35,13 +35,14 @@ ax[1].set_ylim(-60, 60)
 ax[1].set_title("Spectrometer")
 line_spectrometer, = ax[1].plot([], [])
 
+r = range(0, int(RATE / 2 + 1), int(RATE / BUFFER))
+
 # Start the stream
 stream.start_stream()
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(32, GPIO.OUT)
 
 p = GPIO.PWM(32, 1)
-
 
 def lowpass_filter(data, cutoff, fs, order=5):
     b, a = butter(order, cutoff / (fs / 2), btype='low')
@@ -76,7 +77,7 @@ def animate(i):
     # Update the spectrometer
     fft = np.fft.rfft(data)
     fft = np.log10(np.sqrt(np.real(fft) ** 2 + np.imag(fft) ** 2) / BUFFER) * 10
-    line_spectrometer.set_data(np.arange(len(fft)), fft)
+    line_spectrometer.set_data(r, fft)
 
     # simulated LED
     led_value = np.clip(volume_norm * 7.5, 0, 100)
@@ -89,6 +90,7 @@ def animate(i):
 # Create an animation that updates the VU meter at a specified interval
 ani = animation.FuncAnimation(fig, animate, frames=np.linspace(0, 2 * np.pi, 128), interval=0, blit=True)
 # show the plot
+plt.grid()
 plt.show()
 # Close the stream and terminate PyAudio
 stream.stop_stream()
