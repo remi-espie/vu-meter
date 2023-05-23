@@ -20,7 +20,9 @@ stream.start_stream()
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(32, GPIO.OUT)
 
-p = GPIO.PWM(32, 1)
+p = GPIO.PWM(32, 60)
+
+p.start(0)
 
 def lowpass_filter(data, cutoff, fs, order=5):
     b, a = butter(order, cutoff / (fs / 2), btype='low')
